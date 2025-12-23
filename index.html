@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AvioBook Keyboard</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: linear-gradient(135deg, #0c5483 0%, #1a7ba8 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
+          sans-serif;
+        padding: 20px;
+      }
+
+      .keyboard-container {
+        background: linear-gradient(135deg, #0a4d75 0%, #165a85 100%);
+        border-radius: 12px;
+        padding: 20px;
+        max-width: 1100px;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .output-display {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        color: white;
+        font-size: 18px;
+        min-height: 50px;
+        word-wrap: break-word;
+      }
+
+      .keyboard-controls {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row-reverse;
+        flex-wrap: wrap;
+      }
+
+      .keyboard-switcher {
+        display: flex;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 4px;
+        gap: 4px;
+      }
+
+      .switcher-btn {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+
+      .switcher-btn:hover {
+        color: white;
+      }
+
+      .switcher-btn.active {
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+      }
+
+      .dropdown-container {
+        position: relative;
+      }
+
+      .dropdown-btn {
+        background: rgba(255, 255, 255, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+
+      .dropdown-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      .dropdown-btn::after {
+        content: "▼";
+        font-size: 10px;
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 5px;
+        background: rgba(20, 60, 90, 0.95);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        min-width: 200px;
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .dropdown-menu.active {
+        display: flex;
+      }
+
+      .dropdown-item {
+        background: transparent;
+        border: none;
+        color: white;
+        padding: 12px 16px;
+        text-align: left;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .dropdown-item:last-child {
+        border-bottom: none;
+      }
+
+      .dropdown-item:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .mode-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        justify-content: center;
+      }
+
+      .mode-btn {
+        background: rgba(255, 255, 255, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+        text-transform: uppercase;
+      }
+
+      .mode-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      .mode-btn.active {
+        background: rgba(255, 255, 255, 0.35);
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+
+      .shortcuts-container {
+        display: none;
+        margin-bottom: 15px;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .shortcuts-container.active {
+        display: flex;
+      }
+
+      .shortcut-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        padding: 10px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .shortcut-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+      }
+
+      .shortcut-btn:active {
+        transform: translateY(0);
+      }
+
+      .keyboard {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+      }
+
+      .letters-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        border-radius: 10px;
+      }
+
+      .numbers-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        border-radius: 10px;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .letters-section .row {
+        justify-content: flex-end;
+      }
+
+      .key {
+        background: linear-gradient(135deg, #2a7ba8 0%, #1f5f87 100%);
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.1s;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        user-select: none;
+      }
+
+      .key:hover {
+        background: linear-gradient(135deg, #3a8bb8 0%, #2f6f97 100%);
+        transform: translateY(-2px);
+      }
+
+      .key:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .key.special {
+        background: linear-gradient(135deg, #1a5f87 0%, #144a6a 100%);
+        font-size: 16px;
+        width: 80px;
+      }
+
+      .key.shift.caps-on {
+        background: linear-gradient(135deg, #3b8db8 0%, #2a6d95 100%);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+      }
+
+      .key.space {
+        width: 400px;
+      }
+
+      .key.number {
+        background: linear-gradient(135deg, #1f6a8f 0%, #185577 100%);
+      }
+
+      .key.zero {
+        width: 128px;
+      }
+
+      .done-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .done-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      @media (max-width: 768px) {
+        .keyboard {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .key {
+          width: 40px;
+          height: 50px;
+          font-size: 16px;
+        }
+
+        .key.space {
+          width: 250px;
+        }
+
+        .key.special {
+          width: 60px;
+        }
+
+        .key.zero {
+          width: 88px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="keyboard-container">
+      <button class="done-btn" onclick="clearOutput()">Done</button>
+
+      <div class="output-display" id="output"></div>
+
+      <!-- Keyboard Controls -->
+      <div class="keyboard-controls">
+        <!-- Keyboard Type Switcher -->
+        <div class="keyboard-switcher">
+          <button class="switcher-btn" onclick="switchKeyboard('standard')">
+            Standard keyboard
+          </button>
+          <button
+            class="switcher-btn active"
+            onclick="switchKeyboard('aviobook')"
+          >
+            AVIOBOOK keyboard
+          </button>
+        </div>
+
+        <!-- ATC Dropdown -->
+        <div class="dropdown-container">
+          <button class="dropdown-btn" onclick="toggleDropdown('atc')">
+            ATC
+          </button>
+          <div class="dropdown-menu" id="atc-dropdown">
+            <button
+              class="dropdown-item"
+              onclick="selectATCOption('Clearance')"
+            >
+              Clearance
+            </button>
+            <button class="dropdown-item" onclick="selectATCOption('Ground')">
+              Ground
+            </button>
+            <button class="dropdown-item" onclick="selectATCOption('Tower')">
+              Tower
+            </button>
+            <button
+              class="dropdown-item"
+              onclick="selectATCOption('Departure')"
+            >
+              Departure
+            </button>
+            <button class="dropdown-item" onclick="selectATCOption('Approach')">
+              Approach
+            </button>
+            <button class="dropdown-item" onclick="selectATCOption('Center')">
+              Center
+            </button>
+          </div>
+        </div>
+
+        <!-- ETC Dropdown -->
+        <div class="dropdown-container">
+          <button class="dropdown-btn" onclick="toggleDropdown('etc')">
+            ETC
+          </button>
+          <div class="dropdown-menu" id="etc-dropdown">
+            <button class="dropdown-item" onclick="selectETCOption('Company')">
+              Company
+            </button>
+            <button
+              class="dropdown-item"
+              onclick="selectETCOption('Operations')"
+            >
+              Operations
+            </button>
+            <button
+              class="dropdown-item"
+              onclick="selectETCOption('Maintenance')"
+            >
+              Maintenance
+            </button>
+            <button class="dropdown-item" onclick="selectETCOption('Dispatch')">
+              Dispatch
+            </button>
+            <button class="dropdown-item" onclick="selectETCOption('Custom')">
+              Custom
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="mode-buttons">
+        <button class="mode-btn" onclick="toggleShortcuts('ground')">
+          GROUND
+        </button>
+        <button class="mode-btn" onclick="toggleShortcuts('flight')">
+          FLIGHT
+        </button>
+        <button class="mode-btn" onclick="toggleShortcuts('weather')">
+          WEATHER
+        </button>
+        <button class="mode-btn" onclick="toggleShortcuts('oceanic')">
+          OCEANIC
+        </button>
+      </div>
+
+      <!-- Ground Shortcuts -->
+      <div class="shortcuts-container" id="ground-shortcuts">
+        <button class="shortcut-btn" onclick="addText('REQUEST PUSHBACK')">
+          REQUEST PUSHBACK
+        </button>
+        <button class="shortcut-btn" onclick="addText('REQUEST TAXI')">
+          REQUEST TAXI
+        </button>
+        <button class="shortcut-btn" onclick="addText('READY FOR DEPARTURE')">
+          READY FOR DEPARTURE
+        </button>
+        <button class="shortcut-btn" onclick="addText('REQUEST CLEARANCE')">
+          REQUEST CLEARANCE
+        </button>
+        <button class="shortcut-btn" onclick="addText('AT GATE')">
+          AT GATE
+        </button>
+      </div>
+
+      <!-- Flight Shortcuts -->
+      <div class="shortcuts-container" id="flight-shortcuts">
+        <button class="shortcut-btn" onclick="addText('REQUEST ALTITUDE')">
+          REQUEST ALTITUDE
+        </button>
+        <button class="shortcut-btn" onclick="addText('REQUEST DIRECT TO')">
+          REQUEST DIRECT TO
+        </button>
+        <button class="shortcut-btn" onclick="addText('POSITION REPORT')">
+          POSITION REPORT
+        </button>
+        <button class="shortcut-btn" onclick="addText('REQUESTING FL')">
+          REQUESTING FL
+        </button>
+        <button class="shortcut-btn" onclick="addText('ROGER')">ROGER</button>
+        <button class="shortcut-btn" onclick="addText('WILCO')">WILCO</button>
+        <button class="shortcut-btn" onclick="addText('UNABLE')">UNABLE</button>
+      </div>
+
+      <!-- Weather Shortcuts -->
+      <div class="shortcuts-container" id="weather-shortcuts">
+        <button class="shortcut-btn" onclick="addText('REQUEST WEATHER')">
+          REQUEST WEATHER
+        </button>
+        <button class="shortcut-btn" onclick="addText('RIDE SMOOTH')">
+          RIDE SMOOTH
+        </button>
+        <button class="shortcut-btn" onclick="addText('RIDE MODERATE')">
+          RIDE MODERATE
+        </button>
+        <button class="shortcut-btn" onclick="addText('RIDE SEVERE')">
+          RIDE SEVERE
+        </button>
+        <button class="shortcut-btn" onclick="addText('REQUEST DEVIATION')">
+          REQUEST DEVIATION
+        </button>
+      </div>
+
+      <!-- Oceanic Shortcuts -->
+      <div class="shortcuts-container" id="oceanic-shortcuts">
+        <button class="shortcut-btn" onclick="addText('OCEANIC CLEARANCE')">
+          OCEANIC CLEARANCE
+        </button>
+        <button class="shortcut-btn" onclick="addText('POSITION REPORT')">
+          POSITION REPORT
+        </button>
+        <button class="shortcut-btn" onclick="addText('REQUEST TRACK')">
+          REQUEST TRACK
+        </button>
+        <button class="shortcut-btn" onclick="addText('HF CHECK')">
+          HF CHECK
+        </button>
+        <button class="shortcut-btn" onclick="addText('SELCAL CHECK')">
+          SELCAL CHECK
+        </button>
+      </div>
+
+      <div class="keyboard">
+        <!-- Letters Section -->
+        <div class="letters-section">
+          <div class="row">
+            <button class="key" onclick="addChar('Q')">Q</button>
+            <button class="key" onclick="addChar('W')">W</button>
+            <button class="key" onclick="addChar('E')">E</button>
+            <button class="key" onclick="addChar('R')">R</button>
+            <button class="key" onclick="addChar('T')">T</button>
+            <button class="key" onclick="addChar('Y')">Y</button>
+            <button class="key" onclick="addChar('U')">U</button>
+            <button class="key" onclick="addChar('I')">I</button>
+            <button class="key" onclick="addChar('O')">O</button>
+            <button class="key" onclick="addChar('P')">P</button>
+            <button class="key special" onclick="backspace()">⌫</button>
+          </div>
+
+          <div class="row">
+            <button class="key" onclick="addChar('A')">A</button>
+            <button class="key" onclick="addChar('S')">S</button>
+            <button class="key" onclick="addChar('D')">D</button>
+            <button class="key" onclick="addChar('F')">F</button>
+            <button class="key" onclick="addChar('G')">G</button>
+            <button class="key" onclick="addChar('H')">H</button>
+            <button class="key" onclick="addChar('J')">J</button>
+            <button class="key" onclick="addChar('K')">K</button>
+            <button class="key" onclick="addChar('L')">L</button>
+            <button class="key special" onclick="addChar('\n')">return</button>
+          </div>
+
+          <div class="row">
+            <button class="key special shift" onclick="toggleShift()">⇧</button>
+            <button class="key" onclick="addChar('Z')">Z</button>
+            <button class="key" onclick="addChar('X')">X</button>
+            <button class="key" onclick="addChar('C')">C</button>
+            <button class="key" onclick="addChar('V')">V</button>
+            <button class="key" onclick="addChar('B')">B</button>
+            <button class="key" onclick="addChar('N')">N</button>
+            <button class="key" onclick="addChar('M')">M</button>
+            <button class="key" onclick="addChar(',')">,</button>
+            <button class="key" onclick="addChar('.')">.</button>
+            <button class="key special shift" onclick="toggleShift()">⇧</button>
+          </div>
+
+          <div class="row">
+            <button class="key special" onclick="toggleNumbers()">?123</button>
+            <button class="key space" onclick="addChar(' ')"></button>
+            <button class="key" onclick="addChar('+')">+</button>
+            <button class="key" onclick="addChar('-')">-</button>
+            <button class="key" onclick="addChar('/')">/</button>
+            <button class="key special" onclick="addChar(' ')">␣</button>
+          </div>
+        </div>
+
+        <!-- Numbers Section -->
+        <div class="numbers-section">
+          <div class="row">
+            <button class="key number" onclick="addChar('7')">7</button>
+            <button class="key number" onclick="addChar('8')">8</button>
+            <button class="key number" onclick="addChar('9')">9</button>
+          </div>
+          <div class="row">
+            <button class="key number" onclick="addChar('4')">4</button>
+            <button class="key number" onclick="addChar('5')">5</button>
+            <button class="key number" onclick="addChar('6')">6</button>
+          </div>
+          <div class="row">
+            <button class="key number" onclick="addChar('1')">1</button>
+            <button class="key number" onclick="addChar('2')">2</button>
+            <button class="key number" onclick="addChar('3')">3</button>
+          </div>
+          <div class="row">
+            <button class="key number zero" onclick="addChar('0')">0</button>
+            <button class="key" onclick="addChar('.')">.</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentMode = null;
+      let shiftActive = false;
+      let currentKeyboard = "aviobook";
+
+      function addChar(char) {
+        const output = document.getElementById("output");
+        let nextChar = char;
+        if (char.length === 1 && /[a-z]/i.test(char)) {
+          nextChar = shiftActive ? char.toUpperCase() : char.toLowerCase();
+        }
+        output.textContent += nextChar;
+      }
+
+      function addText(text) {
+        const output = document.getElementById("output");
+        if (output.textContent) {
+          output.textContent += " " + text;
+        } else {
+          output.textContent = text;
+        }
+      }
+
+      function backspace() {
+        const output = document.getElementById("output");
+        output.textContent = output.textContent.slice(0, -1);
+      }
+
+      function clearOutput() {
+        document.getElementById("output").textContent = "";
+      }
+
+      function switchKeyboard(type) {
+        currentKeyboard = type;
+        const buttons = document.querySelectorAll(".switcher-btn");
+        buttons.forEach((btn) => btn.classList.remove("active"));
+        event.target.classList.add("active");
+
+        if (type === "standard") {
+          alert("Standard keyboard mode selected");
+        }
+      }
+
+      function toggleDropdown(dropdownId) {
+        const dropdown = document.getElementById(dropdownId + "-dropdown");
+        const allDropdowns = document.querySelectorAll(".dropdown-menu");
+
+        // Close all other dropdowns
+        allDropdowns.forEach((dd) => {
+          if (dd.id !== dropdownId + "-dropdown") {
+            dd.classList.remove("active");
+          }
+        });
+
+        // Toggle current dropdown
+        dropdown.classList.toggle("active");
+      }
+
+      function selectATCOption(option) {
+        addText("[ATC-" + option + "]");
+        document.getElementById("atc-dropdown").classList.remove("active");
+      }
+
+      function selectETCOption(option) {
+        addText("[ETC-" + option + "]");
+        document.getElementById("etc-dropdown").classList.remove("active");
+      }
+
+      function toggleShortcuts(mode) {
+        const allShortcuts = document.querySelectorAll(".shortcuts-container");
+        const selectedShortcuts = document.getElementById(mode + "-shortcuts");
+        const allButtons = document.querySelectorAll(".mode-btn");
+        const clickedButton = event.target;
+
+        // If clicking the same mode, toggle off
+        if (currentMode === mode) {
+          selectedShortcuts.classList.remove("active");
+          clickedButton.classList.remove("active");
+          currentMode = null;
+        } else {
+          // Hide all shortcuts
+          allShortcuts.forEach((sc) => sc.classList.remove("active"));
+          // Remove active from all buttons
+          allButtons.forEach((btn) => btn.classList.remove("active"));
+          // Show selected shortcuts
+          selectedShortcuts.classList.add("active");
+          clickedButton.classList.add("active");
+          currentMode = mode;
+        }
+      }
+
+      function toggleShift() {
+        shiftActive = !shiftActive;
+        updateShiftButtons();
+      }
+
+      function updateShiftButtons() {
+        document.querySelectorAll(".key.shift").forEach((btn) => {
+          btn.classList.toggle("caps-on", shiftActive);
+        });
+      }
+
+      function toggleNumbers() {
+        // Could toggle to numbers/symbols keyboard
+        alert("Number/Symbol keyboard mode");
+      }
+
+      // Close dropdowns when clicking outside
+      document.addEventListener("click", function (event) {
+        s;
+        if (!event.target.closest(".dropdown-container")) {
+          document.querySelectorAll(".dropdown-menu").forEach((dd) => {
+            dd.classList.remove("active");
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
