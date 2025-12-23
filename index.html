@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AvioBook Keyboard</title>
+    <title>NavKeys Keyboard</title>
     <style>
       * {
         margin: 0;
@@ -355,9 +355,9 @@
           </button>
           <button
             class="switcher-btn active"
-            onclick="switchKeyboard('aviobook')"
+            onclick="switchKeyboard('NavKeys')"
           >
-            AVIOBOOK keyboard
+            NavKeys keyboard
           </button>
         </div>
 
@@ -597,7 +597,7 @@
     <script>
       let currentMode = null;
       let shiftActive = false;
-      let currentKeyboard = "aviobook";
+      let currentKeyboard = "NavKeys";
 
       function addChar(char) {
         const output = document.getElementById("output");
