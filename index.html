@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NavKeys Keyboard</title>
+    <title>AvioBook Keyboard</title>
     <style>
       * {
         margin: 0;
@@ -14,12 +14,14 @@
       body {
         background: linear-gradient(135deg, #0c5483 0%, #1a7ba8 100%);
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        justify-content: flex-start;
         align-items: center;
         min-height: 100vh;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
           sans-serif;
         padding: 20px;
+        gap: 15px;
       }
 
       .keyboard-container {
@@ -41,6 +43,32 @@
         font-size: 18px;
         min-height: 50px;
         word-wrap: break-word;
+      }
+
+      .input-demo {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: 1100px;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .input-demo input {
+        background: rgba(255, 255, 255, 0.12);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: white;
+        padding: 10px 12px;
+        font-size: 14px;
+        min-width: 220px;
+      }
+
+      .input-demo input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
       }
 
       .keyboard-controls {
@@ -86,7 +114,8 @@
         position: relative;
       }
 
-      .dropdown-btn {
+      .dropdown-btn,
+      .control-btn {
         background: rgba(255, 255, 255, 0.15);
         border: 2px solid rgba(255, 255, 255, 0.3);
         color: white;
@@ -101,13 +130,24 @@
         transition: all 0.2s;
       }
 
-      .dropdown-btn:hover {
+      .dropdown-btn:hover,
+      .control-btn:hover {
         background: rgba(255, 255, 255, 0.25);
       }
 
       .dropdown-btn::after {
         content: "▼";
         font-size: 10px;
+      }
+
+      .control-btn.active {
+        background: rgba(255, 255, 255, 0.35);
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+
+      .control-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
 
       .dropdown-menu {
@@ -155,6 +195,67 @@
         gap: 10px;
         margin-bottom: 15px;
         justify-content: center;
+        max-height: 140px;
+        overflow: hidden;
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.35s ease, max-height 0s linear,
+          margin-bottom 0s linear, visibility 0s linear;
+        transition-delay: 0s, 0s, 0s, 0s;
+      }
+
+      .mode-buttons.hidden {
+        max-height: 0;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        margin-bottom: 0;
+        transition-delay: 0s, 0.35s, 0.35s, 0.35s;
+      }
+
+      .shortcuts-stack {
+        position: relative;
+        width: 100%;
+        height: 0;
+        margin-bottom: 0;
+        overflow: hidden;
+        padding-left: 0;
+      }
+
+      .shortcuts-stack.has-shortcuts {
+        margin-bottom: 15px;
+      }
+
+      .shortcuts-stack.show-return {
+        padding-left: 90px;
+      }
+
+      .shortcuts-return {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 44px;
+        height: 44px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 20px;
+        font-weight: 600;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+      }
+
+      .shortcuts-stack.show-return .shortcuts-return {
+        opacity: 1;
+        pointer-events: auto;
       }
 
       .mode-btn {
@@ -180,15 +281,37 @@
       }
 
       .shortcuts-container {
-        display: none;
-        margin-bottom: 15px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
         gap: 8px;
         flex-wrap: wrap;
         justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.35s ease;
+        z-index: 1;
       }
 
       .shortcuts-container.active {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .shortcuts-container.grouped {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .shortcuts-row {
         display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
       }
 
       .shortcut-btn {
@@ -216,6 +339,17 @@
         display: flex;
         gap: 15px;
         justify-content: center;
+      }
+
+      .keyboard-area {
+        display: flex;
+        justify-content: center;
+      }
+
+      .keyboard-wrap {
+        position: relative;
+        display: inline-block;
+        padding-top: 48px;
       }
 
       .letters-section {
@@ -314,10 +448,43 @@
         background: rgba(255, 255, 255, 0.3);
       }
 
+      .nav-buttons {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        gap: 8px;
+        z-index: 10;
+      }
+
+      .nav-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .nav-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .nav-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
       @media (max-width: 768px) {
         .keyboard {
           flex-direction: column;
           align-items: center;
+        }
+
+        .keyboard-wrap {
+          padding-top: 44px;
         }
 
         .key {
@@ -341,6 +508,11 @@
     </style>
   </head>
   <body>
+    <form class="input-demo">
+      <input type="text" placeholder="Field 1" />
+      <input type="text" placeholder="Field 2" />
+    </form>
+
     <div class="keyboard-container">
       <button class="done-btn" onclick="clearOutput()">Done</button>
 
@@ -355,74 +527,23 @@
           </button>
           <button
             class="switcher-btn active"
-            onclick="switchKeyboard('NavKeys')"
+            onclick="switchKeyboard('aviobook')"
           >
-            NavKeys keyboard
+            AVIOBOOK keyboard
           </button>
         </div>
 
-        <!-- ATC Dropdown -->
-        <div class="dropdown-container">
-          <button class="dropdown-btn" onclick="toggleDropdown('atc')">
-            ATC
-          </button>
-          <div class="dropdown-menu" id="atc-dropdown">
-            <button
-              class="dropdown-item"
-              onclick="selectATCOption('Clearance')"
-            >
-              Clearance
-            </button>
-            <button class="dropdown-item" onclick="selectATCOption('Ground')">
-              Ground
-            </button>
-            <button class="dropdown-item" onclick="selectATCOption('Tower')">
-              Tower
-            </button>
-            <button
-              class="dropdown-item"
-              onclick="selectATCOption('Departure')"
-            >
-              Departure
-            </button>
-            <button class="dropdown-item" onclick="selectATCOption('Approach')">
-              Approach
-            </button>
-            <button class="dropdown-item" onclick="selectATCOption('Center')">
-              Center
-            </button>
-          </div>
-        </div>
+        <!-- ATC Toggle -->
+        <button
+          class="control-btn active"
+          id="atc-toggle"
+          onclick="toggleCategories(this)"
+        >
+          ATC
+        </button>
 
-        <!-- ETC Dropdown -->
-        <div class="dropdown-container">
-          <button class="dropdown-btn" onclick="toggleDropdown('etc')">
-            ETC
-          </button>
-          <div class="dropdown-menu" id="etc-dropdown">
-            <button class="dropdown-item" onclick="selectETCOption('Company')">
-              Company
-            </button>
-            <button
-              class="dropdown-item"
-              onclick="selectETCOption('Operations')"
-            >
-              Operations
-            </button>
-            <button
-              class="dropdown-item"
-              onclick="selectETCOption('Maintenance')"
-            >
-              Maintenance
-            </button>
-            <button class="dropdown-item" onclick="selectETCOption('Dispatch')">
-              Dispatch
-            </button>
-            <button class="dropdown-item" onclick="selectETCOption('Custom')">
-              Custom
-            </button>
-          </div>
-        </div>
+        <!-- ETC Toggle (disabled for now) -->
+        <button class="control-btn" disabled>ETC</button>
       </div>
       <div class="mode-buttons">
         <button class="mode-btn" onclick="toggleShortcuts('ground')">
@@ -439,156 +560,249 @@
         </button>
       </div>
 
-      <!-- Ground Shortcuts -->
-      <div class="shortcuts-container" id="ground-shortcuts">
-        <button class="shortcut-btn" onclick="addText('REQUEST PUSHBACK')">
-          REQUEST PUSHBACK
+      <div class="shortcuts-stack" id="shortcuts-stack">
+        <button
+          class="shortcuts-return"
+          onclick="returnToCategories()"
+          aria-label="Return"
+        >
+          &#x21A9;
         </button>
-        <button class="shortcut-btn" onclick="addText('REQUEST TAXI')">
-          REQUEST TAXI
-        </button>
-        <button class="shortcut-btn" onclick="addText('READY FOR DEPARTURE')">
-          READY FOR DEPARTURE
-        </button>
-        <button class="shortcut-btn" onclick="addText('REQUEST CLEARANCE')">
-          REQUEST CLEARANCE
-        </button>
-        <button class="shortcut-btn" onclick="addText('AT GATE')">
-          AT GATE
-        </button>
-      </div>
-
-      <!-- Flight Shortcuts -->
-      <div class="shortcuts-container" id="flight-shortcuts">
-        <button class="shortcut-btn" onclick="addText('REQUEST ALTITUDE')">
-          REQUEST ALTITUDE
-        </button>
-        <button class="shortcut-btn" onclick="addText('REQUEST DIRECT TO')">
-          REQUEST DIRECT TO
-        </button>
-        <button class="shortcut-btn" onclick="addText('POSITION REPORT')">
-          POSITION REPORT
-        </button>
-        <button class="shortcut-btn" onclick="addText('REQUESTING FL')">
-          REQUESTING FL
-        </button>
-        <button class="shortcut-btn" onclick="addText('ROGER')">ROGER</button>
-        <button class="shortcut-btn" onclick="addText('WILCO')">WILCO</button>
-        <button class="shortcut-btn" onclick="addText('UNABLE')">UNABLE</button>
-      </div>
-
-      <!-- Weather Shortcuts -->
-      <div class="shortcuts-container" id="weather-shortcuts">
-        <button class="shortcut-btn" onclick="addText('REQUEST WEATHER')">
-          REQUEST WEATHER
-        </button>
-        <button class="shortcut-btn" onclick="addText('RIDE SMOOTH')">
-          RIDE SMOOTH
-        </button>
-        <button class="shortcut-btn" onclick="addText('RIDE MODERATE')">
-          RIDE MODERATE
-        </button>
-        <button class="shortcut-btn" onclick="addText('RIDE SEVERE')">
-          RIDE SEVERE
-        </button>
-        <button class="shortcut-btn" onclick="addText('REQUEST DEVIATION')">
-          REQUEST DEVIATION
-        </button>
-      </div>
-
-      <!-- Oceanic Shortcuts -->
-      <div class="shortcuts-container" id="oceanic-shortcuts">
-        <button class="shortcut-btn" onclick="addText('OCEANIC CLEARANCE')">
-          OCEANIC CLEARANCE
-        </button>
-        <button class="shortcut-btn" onclick="addText('POSITION REPORT')">
-          POSITION REPORT
-        </button>
-        <button class="shortcut-btn" onclick="addText('REQUEST TRACK')">
-          REQUEST TRACK
-        </button>
-        <button class="shortcut-btn" onclick="addText('HF CHECK')">
-          HF CHECK
-        </button>
-        <button class="shortcut-btn" onclick="addText('SELCAL CHECK')">
-          SELCAL CHECK
-        </button>
-      </div>
-
-      <div class="keyboard">
-        <!-- Letters Section -->
-        <div class="letters-section">
-          <div class="row">
-            <button class="key" onclick="addChar('Q')">Q</button>
-            <button class="key" onclick="addChar('W')">W</button>
-            <button class="key" onclick="addChar('E')">E</button>
-            <button class="key" onclick="addChar('R')">R</button>
-            <button class="key" onclick="addChar('T')">T</button>
-            <button class="key" onclick="addChar('Y')">Y</button>
-            <button class="key" onclick="addChar('U')">U</button>
-            <button class="key" onclick="addChar('I')">I</button>
-            <button class="key" onclick="addChar('O')">O</button>
-            <button class="key" onclick="addChar('P')">P</button>
-            <button class="key special" onclick="backspace()">⌫</button>
+        <!-- Ground Shortcuts -->
+        <div class="shortcuts-container grouped" id="ground-shortcuts">
+          <div class="shortcuts-row">
+            <button class="shortcut-btn" onclick="addText('CLRD')">CLRD</button>
+            <button class="shortcut-btn" onclick="addText('RWY')">RWY</button>
+            <button class="shortcut-btn" onclick="addText('SID')">SID</button>
+            <button class="shortcut-btn" onclick="addText('ALT/FL')">
+              ALT/FL
+            </button>
+            <button class="shortcut-btn" onclick="addText('SQ')">SQ</button>
+            <button class="shortcut-btn" onclick="addText('CTOT')">
+              CTOT
+            </button>
+            <button class="shortcut-btn" onclick="addText('TSAT')">
+              TSAT
+            </button>
           </div>
-
-          <div class="row">
-            <button class="key" onclick="addChar('A')">A</button>
-            <button class="key" onclick="addChar('S')">S</button>
-            <button class="key" onclick="addChar('D')">D</button>
-            <button class="key" onclick="addChar('F')">F</button>
-            <button class="key" onclick="addChar('G')">G</button>
-            <button class="key" onclick="addChar('H')">H</button>
-            <button class="key" onclick="addChar('J')">J</button>
-            <button class="key" onclick="addChar('K')">K</button>
-            <button class="key" onclick="addChar('L')">L</button>
-            <button class="key special" onclick="addChar('\n')">return</button>
-          </div>
-
-          <div class="row">
-            <button class="key special shift" onclick="toggleShift()">⇧</button>
-            <button class="key" onclick="addChar('Z')">Z</button>
-            <button class="key" onclick="addChar('X')">X</button>
-            <button class="key" onclick="addChar('C')">C</button>
-            <button class="key" onclick="addChar('V')">V</button>
-            <button class="key" onclick="addChar('B')">B</button>
-            <button class="key" onclick="addChar('N')">N</button>
-            <button class="key" onclick="addChar('M')">M</button>
-            <button class="key" onclick="addChar(',')">,</button>
-            <button class="key" onclick="addChar('.')">.</button>
-            <button class="key special shift" onclick="toggleShift()">⇧</button>
-          </div>
-
-          <div class="row">
-            <button class="key special" onclick="toggleNumbers()">?123</button>
-            <button class="key space" onclick="addChar(' ')"></button>
-            <button class="key" onclick="addChar('+')">+</button>
-            <button class="key" onclick="addChar('-')">-</button>
-            <button class="key" onclick="addChar('/')">/</button>
-            <button class="key special" onclick="addChar(' ')">␣</button>
+          <div class="shortcuts-row">
+            <button class="shortcut-btn" onclick="addText('TWY')">TWY</button>
+            <button class="shortcut-btn" onclick="addText('HOLD')">
+              HOLD
+            </button>
+            <button class="shortcut-btn" onclick="addText('VIA')">VIA</button>
+            <button class="shortcut-btn" onclick="addText('POS')">POS</button>
           </div>
         </div>
 
-        <!-- Numbers Section -->
-        <div class="numbers-section">
-          <div class="row">
-            <button class="key number" onclick="addChar('7')">7</button>
-            <button class="key number" onclick="addChar('8')">8</button>
-            <button class="key number" onclick="addChar('9')">9</button>
+        <!-- Flight Shortcuts -->
+        <div class="shortcuts-container grouped" id="flight-shortcuts">
+          <div class="shortcuts-row">
+            <button class="shortcut-btn" onclick="addText('CLB')">CLB</button>
+            <button class="shortcut-btn" onclick="addText('DES')">DES</button>
+            <button class="shortcut-btn" onclick="addText('QNH')">QNH</button>
+            <button class="shortcut-btn" onclick="addText('LEFT')">
+              LEFT
+            </button>
+            <button class="shortcut-btn" onclick="addText('RIGHT')">
+              RIGHT
+            </button>
+            <button class="shortcut-btn" onclick="addText('HDG')">HDG</button>
+            <button class="shortcut-btn" onclick="addText('DCT')">DCT</button>
+            <button class="shortcut-btn" onclick="addText('SPEED')">
+              SPEED
+            </button>
+            <button class="shortcut-btn" onclick="addText('SQ')">SQ</button>
           </div>
-          <div class="row">
-            <button class="key number" onclick="addChar('4')">4</button>
-            <button class="key number" onclick="addChar('5')">5</button>
-            <button class="key number" onclick="addChar('6')">6</button>
+          <div class="shortcuts-row">
+            <button class="shortcut-btn" onclick="addText('VECTORS')">
+              VECTORS
+            </button>
+            <button class="shortcut-btn" onclick="addText('STAR')">
+              STAR
+            </button>
+            <button class="shortcut-btn" onclick="addText('RWY')">RWY</button>
+            <button class="shortcut-btn" onclick="addText('HOLD')">
+              HOLD
+            </button>
+            <button class="shortcut-btn" onclick="addText('EAT')">EAT</button>
           </div>
-          <div class="row">
-            <button class="key number" onclick="addChar('1')">1</button>
-            <button class="key number" onclick="addChar('2')">2</button>
-            <button class="key number" onclick="addChar('3')">3</button>
+        </div>
+
+        <!-- Weather Shortcuts -->
+        <div class="shortcuts-container grouped" id="weather-shortcuts">
+          <div class="shortcuts-row">
+            <button class="shortcut-btn" onclick="addText('RVR')">RVR</button>
+            <button class="shortcut-btn" onclick="addText('CAVOK')">
+              CAVOK
+            </button>
+            <button class="shortcut-btn" onclick="addText('FEW')">FEW</button>
+            <button class="shortcut-btn" onclick="addText('SCT')">SCT</button>
+            <button class="shortcut-btn" onclick="addText('BKN')">BKN</button>
+            <button class="shortcut-btn" onclick="addText('OVC')">OVC</button>
+            <button class="shortcut-btn" onclick="addText('VV')">VV</button>
+            <button class="shortcut-btn" onclick="addText('QNH')">QNH</button>
+            <button class="shortcut-btn" onclick="addText('QFE')">QFE</button>
+            <button class="shortcut-btn" onclick="addText('BECMG')">
+              BECMG
+            </button>
+            <button class="shortcut-btn" onclick="addText('TEMPO')">
+              TEMPO
+            </button>
           </div>
-          <div class="row">
-            <button class="key number zero" onclick="addChar('0')">0</button>
-            <button class="key" onclick="addChar('.')">.</button>
+          <div class="shortcuts-row">
+            <button class="shortcut-btn" onclick="addText('ILS')">ILS</button>
+            <button class="shortcut-btn" onclick="addText('BIRDS')">
+              BIRDS
+            </button>
+            <button class="shortcut-btn" onclick="addText('WIP')">WIP</button>
+            <button class="shortcut-btn" onclick="addText('TWY')">TWY</button>
+            <button class="shortcut-btn" onclick="addText('RWY')">RWY</button>
+            <button class="shortcut-btn" onclick="addText('CLSD')">
+              CLSD
+            </button>
+            <button class="shortcut-btn" onclick="addText('NOSIG')">
+              NOSIG
+            </button>
+          </div>
+          <div class="shortcuts-row">
+            <button class="shortcut-btn" onclick="addText('MI')">MI</button>
+            <button class="shortcut-btn" onclick="addText('SH')">SH</button>
+            <button class="shortcut-btn" onclick="addText('BC')">BC</button>
+            <button class="shortcut-btn" onclick="addText('VC')">VC</button>
+            <button class="shortcut-btn" onclick="addText('FZ')">FZ</button>
+            <button class="shortcut-btn" onclick="addText('TS')">TS</button>
+            <button class="shortcut-btn" onclick="addText('RA')">RA</button>
+            <button class="shortcut-btn" onclick="addText('DZ')">DZ</button>
+            <button class="shortcut-btn" onclick="addText('SN')">SN</button>
+            <button class="shortcut-btn" onclick="addText('SG')">SG</button>
+            <button class="shortcut-btn" onclick="addText('FG')">FG</button>
+            <button class="shortcut-btn" onclick="addText('BR')">BR</button>
+            <button class="shortcut-btn" onclick="addText('HZ')">HZ</button>
+          </div>
+        </div>
+
+        <!-- Oceanic Shortcuts -->
+        <div class="shortcuts-container grouped" id="oceanic-shortcuts">
+          <div class="shortcuts-row">
+            <button class="shortcut-btn" onclick="addText('ROUTE CHECKED')">
+              ROUTE CHECKED
+            </button>
+            <button
+              class="shortcut-btn"
+              onclick="addText('FULL COORDINATES CHECKED')"
+            >
+              FULL COORDINATES CHECKED
+            </button>
+          </div>
+          <div class="shortcuts-row">
+            <button
+              class="shortcut-btn"
+              onclick="addText('ROUTE CHECKED VS OCEANIC CLEARANCE')"
+            >
+              ROUTE CHECKED VS OCEANIC CLEARANCE
+            </button>
+            <button
+              class="shortcut-btn"
+              onclick="addText('TRK & DIST CHECKED')"
+            >
+              TRK & DIST CHECKED
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="keyboard-area">
+        <div class="keyboard-wrap">
+          <div class="nav-buttons">
+            <button class="nav-btn" onclick="prevField()">Previous</button>
+            <button class="nav-btn" onclick="nextField()">Next</button>
+          </div>
+
+          <div class="keyboard">
+            <!-- Letters Section -->
+            <div class="letters-section">
+              <div class="row">
+                <button class="key" onclick="addChar('Q')">Q</button>
+                <button class="key" onclick="addChar('W')">W</button>
+                <button class="key" onclick="addChar('E')">E</button>
+                <button class="key" onclick="addChar('R')">R</button>
+                <button class="key" onclick="addChar('T')">T</button>
+                <button class="key" onclick="addChar('Y')">Y</button>
+                <button class="key" onclick="addChar('U')">U</button>
+                <button class="key" onclick="addChar('I')">I</button>
+                <button class="key" onclick="addChar('O')">O</button>
+                <button class="key" onclick="addChar('P')">P</button>
+                <button class="key special" onclick="backspace()">⌫</button>
+              </div>
+
+              <div class="row">
+                <button class="key" onclick="addChar('A')">A</button>
+                <button class="key" onclick="addChar('S')">S</button>
+                <button class="key" onclick="addChar('D')">D</button>
+                <button class="key" onclick="addChar('F')">F</button>
+                <button class="key" onclick="addChar('G')">G</button>
+                <button class="key" onclick="addChar('H')">H</button>
+                <button class="key" onclick="addChar('J')">J</button>
+                <button class="key" onclick="addChar('K')">K</button>
+                <button class="key" onclick="addChar('L')">L</button>
+                <button class="key special" onclick="addChar('\n')">
+                  return
+                </button>
+              </div>
+
+              <div class="row">
+                <button class="key special shift" onclick="toggleShift()">
+                  ⇧
+                </button>
+                <button class="key" onclick="addChar('Z')">Z</button>
+                <button class="key" onclick="addChar('X')">X</button>
+                <button class="key" onclick="addChar('C')">C</button>
+                <button class="key" onclick="addChar('V')">V</button>
+                <button class="key" onclick="addChar('B')">B</button>
+                <button class="key" onclick="addChar('N')">N</button>
+                <button class="key" onclick="addChar('M')">M</button>
+                <button class="key" onclick="addChar(',')">,</button>
+                <button class="key" onclick="addChar('.')">.</button>
+                <button class="key special shift" onclick="toggleShift()">
+                  ⇧
+                </button>
+              </div>
+
+              <div class="row">
+                <button class="key special" onclick="toggleNumbers()">
+                  ?123
+                </button>
+                <button class="key space" onclick="addChar(' ')"></button>
+                <button class="key" onclick="addChar('+')">+</button>
+                <button class="key" onclick="addChar('-')">-</button>
+                <button class="key" onclick="addChar('/')">/</button>
+                <button class="key special" onclick="addChar(' ')">␣</button>
+              </div>
+            </div>
+
+            <!-- Numbers Section -->
+            <div class="numbers-section">
+              <div class="row">
+                <button class="key number" onclick="addChar('7')">7</button>
+                <button class="key number" onclick="addChar('8')">8</button>
+                <button class="key number" onclick="addChar('9')">9</button>
+              </div>
+              <div class="row">
+                <button class="key number" onclick="addChar('4')">4</button>
+                <button class="key number" onclick="addChar('5')">5</button>
+                <button class="key number" onclick="addChar('6')">6</button>
+              </div>
+              <div class="row">
+                <button class="key number" onclick="addChar('1')">1</button>
+                <button class="key number" onclick="addChar('2')">2</button>
+                <button class="key number" onclick="addChar('3')">3</button>
+              </div>
+              <div class="row">
+                <button class="key number zero" onclick="addChar('0')">0</button>
+                <button class="key" onclick="addChar('.')">.</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -597,7 +811,8 @@
     <script>
       let currentMode = null;
       let shiftActive = false;
-      let currentKeyboard = "NavKeys";
+      let currentKeyboard = "aviobook";
+      let lastFocusedField = null;
 
       function addChar(char) {
         const output = document.getElementById("output");
@@ -637,29 +852,49 @@
         }
       }
 
-      function toggleDropdown(dropdownId) {
-        const dropdown = document.getElementById(dropdownId + "-dropdown");
-        const allDropdowns = document.querySelectorAll(".dropdown-menu");
-
-        // Close all other dropdowns
-        allDropdowns.forEach((dd) => {
-          if (dd.id !== dropdownId + "-dropdown") {
-            dd.classList.remove("active");
-          }
-        });
-
-        // Toggle current dropdown
-        dropdown.classList.toggle("active");
+      function toggleCategories(button) {
+        const modeButtons = document.querySelector(".mode-buttons");
+        const categoriesVisible = !modeButtons.classList.contains("hidden");
+        modeButtons.classList.toggle("hidden", categoriesVisible);
+        button.classList.toggle("active", !categoriesVisible);
+        clearShortcuts();
       }
 
-      function selectATCOption(option) {
-        addText("[ATC-" + option + "]");
-        document.getElementById("atc-dropdown").classList.remove("active");
+      function clearShortcuts() {
+        document
+          .querySelectorAll(".shortcuts-container")
+          .forEach((sc) => sc.classList.remove("active"));
+        document
+          .querySelectorAll(".mode-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+        currentMode = null;
+        updateShortcutsStack(null);
       }
 
-      function selectETCOption(option) {
-        addText("[ETC-" + option + "]");
-        document.getElementById("etc-dropdown").classList.remove("active");
+      function returnToCategories() {
+        const modeButtons = document.querySelector(".mode-buttons");
+        const atcButton = document.getElementById("atc-toggle");
+        modeButtons.classList.remove("hidden");
+        if (atcButton) {
+          atcButton.classList.add("active");
+        }
+        clearShortcuts();
+      }
+
+      function updateShortcutsStack(activeContainer) {
+        const stack = document.getElementById("shortcuts-stack");
+        if (!stack) {
+          return;
+        }
+
+        if (!activeContainer) {
+          stack.style.height = "0px";
+          stack.classList.remove("has-shortcuts", "show-return");
+          return;
+        }
+
+        stack.style.height = activeContainer.scrollHeight + "px";
+        stack.classList.add("has-shortcuts", "show-return");
       }
 
       function toggleShortcuts(mode) {
@@ -667,12 +902,12 @@
         const selectedShortcuts = document.getElementById(mode + "-shortcuts");
         const allButtons = document.querySelectorAll(".mode-btn");
         const clickedButton = event.target;
+        const modeButtons = document.querySelector(".mode-buttons");
+        const atcButton = document.getElementById("atc-toggle");
 
         // If clicking the same mode, toggle off
         if (currentMode === mode) {
-          selectedShortcuts.classList.remove("active");
-          clickedButton.classList.remove("active");
-          currentMode = null;
+          return;
         } else {
           // Hide all shortcuts
           allShortcuts.forEach((sc) => sc.classList.remove("active"));
@@ -682,6 +917,13 @@
           selectedShortcuts.classList.add("active");
           clickedButton.classList.add("active");
           currentMode = mode;
+          modeButtons.classList.add("hidden");
+          if (atcButton) {
+            atcButton.classList.remove("active");
+          }
+          requestAnimationFrame(() => {
+            updateShortcutsStack(selectedShortcuts);
+          });
         }
       }
 
@@ -701,15 +943,88 @@
         alert("Number/Symbol keyboard mode");
       }
 
-      // Close dropdowns when clicking outside
-      document.addEventListener("click", function (event) {
-        s;
-        if (!event.target.closest(".dropdown-container")) {
-          document.querySelectorAll(".dropdown-menu").forEach((dd) => {
-            dd.classList.remove("active");
-          });
+      function getFocusableFields() {
+        const fields = Array.from(
+          document.querySelectorAll(
+            "input:not([type='hidden']):not([disabled]), textarea:not([disabled]), [contenteditable='true']"
+          )
+        );
+        return fields.filter(
+          (field) =>
+            field.getClientRects().length > 0 || field === document.activeElement
+        );
+      }
+
+      function updateFieldNavButtons() {
+        const hasFields = getFocusableFields().length > 0;
+        document.querySelectorAll(".nav-btn").forEach((btn) => {
+          btn.disabled = !hasFields;
+        });
+      }
+
+      function focusField(direction) {
+        const fields = getFocusableFields();
+        if (fields.length === 0) {
+          return;
+        }
+
+        const active =
+          document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
+        const activeField =
+          active && fields.includes(active) ? active : lastFocusedField;
+        let index = fields.indexOf(active);
+        if (activeField) {
+          index = fields.indexOf(activeField);
+        }
+        if (index === -1) {
+          index = direction === "next" ? -1 : 0;
+        }
+
+        const nextIndex =
+          direction === "next"
+            ? (index + 1) % fields.length
+            : (index - 1 + fields.length) % fields.length;
+        const target = fields[nextIndex];
+        target.focus();
+        if (typeof target.select === "function") {
+          target.select();
+        }
+        lastFocusedField = target;
+      }
+
+      function prevField() {
+        focusField("prev");
+      }
+
+      function nextField() {
+        focusField("next");
+      }
+
+      window.addEventListener("resize", function () {
+        if (currentMode) {
+          const activeShortcuts = document.getElementById(
+            currentMode + "-shortcuts"
+          );
+          updateShortcutsStack(activeShortcuts);
+        }
+        updateFieldNavButtons();
+      });
+
+      document.addEventListener("focusin", updateFieldNavButtons);
+      document.addEventListener("focusin", function (event) {
+        const target = event.target;
+        if (
+          target instanceof HTMLElement &&
+          (target.tagName === "INPUT" ||
+            target.tagName === "TEXTAREA" ||
+            target.isContentEditable)
+        ) {
+          lastFocusedField = target;
         }
       });
+      updateFieldNavButtons();
     </script>
   </body>
 </html>
